@@ -14,3 +14,4 @@ PS：if you use angle model plz change the input shape dstHeight from 32 to 48
 ![image](https://github.com/FeiGeChuanShu/ncnn_paddleocr/blob/main/ocr_app_result.jpg)
 1.infer: https://github.com/DayBreak-u/chineseocr_lite/tree/onnx/cpp_projects/OcrLiteNcnn  
 2.model: https://github.com/frotms/PaddleOCR2Pytorch  
+3.model: https://github.com/PaddlePaddle/PaddleOCR#PP-OCRv2
