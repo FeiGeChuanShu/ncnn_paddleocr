@@ -1,5 +1,5 @@
 # ncnn_paddleocr
-This is a sample paddleocr ncnn android project, it depends on ncnn library and opencv
+This is a sample paddleocr ncnn android project, it depends on ncnn library and opencv  
 https://github.com/Tencent/ncnn  
 https://github.com/nihui/opencv-mobile
 
