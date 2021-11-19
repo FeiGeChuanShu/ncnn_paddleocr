@@ -14,6 +14,9 @@
 
 package com.tencent.paddleocrncnn;
 
+import android.os.Build;
+import android.Manifest;
+import android.os.Environment;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -29,21 +32,37 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.io.IOException;
-
+import java.io.File;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
+import android.provider.MediaStore;
+import android.content.pm.PackageManager;
 public class MainActivity extends Activity
 {
-    private static final int SELECT_IMAGE = 1;
+    private static final int TAKE_PHOTO = 1;
+    private static final int SELECT_IMAGE = 2;
 
     private ImageView imageView;
-    private Bitmap bitmap = null;
+    //private Bitmap bitmap = null;
     private Bitmap yourSelectedImage = null;
-
+    private final String filePath = Environment.getExternalStorageDirectory() + File.separator + "output_image.jpg";
+    private Uri imageUri;
     private PaddleOCRNcnn paddleocrncnn = new PaddleOCRNcnn();
-
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (grantResults != null && grantResults.length != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            switch (requestCode) {
+                case 1: {
+                    requestCamera();
+                }
+                break;
+            }
+        }
+    }
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -68,15 +87,21 @@ public class MainActivity extends Activity
                 startActivityForResult(i, SELECT_IMAGE);
             }
         });
-
+        Button buttonCamera = (Button) findViewById(R.id.buttonCamera);
+        buttonCamera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View arg0) {
+                requestPermission();
+            }
+        });
         Button buttonDetect = (Button) findViewById(R.id.buttonDetect);
         buttonDetect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View arg0) {
                 if (yourSelectedImage == null)
                     return;
-
-                PaddleOCRNcnn.Obj[] objects = paddleocrncnn.Detect(yourSelectedImage, false);
+                Bitmap bitmap = yourSelectedImage.copy(Bitmap.Config.ARGB_8888, true);
+                PaddleOCRNcnn.Obj[] objects = paddleocrncnn.Detect(bitmap, false);
 
                 showObjects(objects);
             }
@@ -88,24 +113,57 @@ public class MainActivity extends Activity
             public void onClick(View arg0) {
                 if (yourSelectedImage == null)
                     return;
-
-                PaddleOCRNcnn.Obj[] objects = paddleocrncnn.Detect(yourSelectedImage, true);
+                Bitmap bitmap = yourSelectedImage.copy(Bitmap.Config.ARGB_8888, true);
+                PaddleOCRNcnn.Obj[] objects = paddleocrncnn.Detect(bitmap, true);
 
                 showObjects(objects);
             }
         });
     }
+    private void requestPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA}, 1);
+        } else {
+            requestCamera();
+        }
+    }
+    private void requestCamera() {
+        File outputImage = new File(filePath);
+        try
+        {
+            if (!outputImage.getParentFile().exists()) {
+                outputImage.getParentFile().mkdirs();
+            }
+            if (outputImage.exists()) {
+                outputImage.delete();
+            }
 
+            outputImage.createNewFile();
+
+            if (Build.VERSION.SDK_INT >= 24) {
+                imageUri = FileProvider.getUriForFile(this,
+                        "com.tencent.paddleocrncnn.fileprovider", outputImage);
+            } else {
+                imageUri = Uri.fromFile(outputImage);
+            }
+            Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+            startActivityForResult(intent, TAKE_PHOTO);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
     private void showObjects(PaddleOCRNcnn.Obj[] objects)
     {
         if (objects == null)
         {
-            imageView.setImageBitmap(bitmap);
+            imageView.setImageBitmap(yourSelectedImage);
             return;
         }
 
         // draw objects on bitmap
-        Bitmap rgba = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+        Bitmap rgba = yourSelectedImage.copy(Bitmap.Config.ARGB_8888, true);
 
         final int[] colors = new int[] {
             Color.rgb( 54,  67, 244),
@@ -134,14 +192,13 @@ public class MainActivity extends Activity
         Paint paint = new Paint();
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(4);
-
         Paint textbgpaint = new Paint();
         textbgpaint.setColor(Color.WHITE);
         textbgpaint.setStyle(Paint.Style.FILL);
 
         Paint textpaint = new Paint();
         textpaint.setColor(Color.BLACK);
-        textpaint.setTextSize(26);
+        textpaint.setTextSize(56);
         textpaint.setTextAlign(Paint.Align.LEFT);
 
         for (int i = 0; i < objects.length; i++)
@@ -177,28 +234,37 @@ public class MainActivity extends Activity
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
-        if (resultCode == RESULT_OK && null != data) {
-            Uri selectedImage = data.getData();
-
-            try
-            {
-                if (requestCode == SELECT_IMAGE) {
-                    bitmap = decodeUri(selectedImage);
-
-                    yourSelectedImage = bitmap.copy(Bitmap.Config.ARGB_8888, true);
-
-                    imageView.setImageBitmap(bitmap);
+        switch (requestCode) {
+            case TAKE_PHOTO:
+                if (resultCode == RESULT_OK) {
+                    try {
+                        yourSelectedImage = BitmapFactory.decodeStream(getContentResolver().openInputStream(imageUri));
+                        imageView.setImageBitmap(yourSelectedImage);
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                        Log.e("MainActivity", "FileNotFoundException");
+                    }
                 }
-            }
-            catch (FileNotFoundException e)
-            {
-                Log.e("MainActivity", "FileNotFoundException");
-                return;
-            }
+                break;
+            case SELECT_IMAGE:
+                if (resultCode == RESULT_OK && null != data) {
+                    Uri selectedImage = data.getData();
+                    try {
+                        if (requestCode == SELECT_IMAGE) {
+                            yourSelectedImage = decodeUri(selectedImage);
+
+                            imageView.setImageBitmap(yourSelectedImage);
+                        }
+                    }
+                    catch (FileNotFoundException e) {
+                        Log.e("MainActivity", "FileNotFoundException");
+                        return;
+                    }
+                }
+            default:
+                break;
         }
     }
 

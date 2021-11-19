@@ -21,4 +21,7 @@ android {
             path file('src/main/jni/CMakeLists.txt')
         }
     }
+    dependencies {
+        implementation 'com.android.support:support-v4:24.0.0'
+    }
 }
