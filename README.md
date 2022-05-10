@@ -15,7 +15,7 @@ PS：if you use angle model plz change the input shape dstHeight from 32 to 48
 ## text recognition  
 1.mv3rec-sim-op(paddleocr_mobile)  
 2.pdocrv2.0_rec-op(PP-OCRv2)  
-
+3.ch_PP-OCRv3_xx(PP-OCRv3)
 ## how to build and run
 ### step1
 https://github.com/Tencent/ncnn/releases
@@ -37,4 +37,5 @@ https://github.com/nihui/opencv-mobile
 1.https://github.com/DayBreak-u/chineseocr_lite/tree/onnx/cpp_projects/OcrLiteNcnn  
 2.https://github.com/frotms/PaddleOCR2Pytorch  
 3.https://github.com/PaddlePaddle/PaddleOCR#PP-OCRv2  
-4.https://github.com/nihui/ncnn-android-yolov5
+4.https://github.com/nihui/ncnn-android-yolov5  
+5.https://github.com/PaddlePaddle/PaddleOCR/blob/release/2.5  
