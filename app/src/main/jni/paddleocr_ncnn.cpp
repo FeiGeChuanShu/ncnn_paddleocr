@@ -28,7 +28,7 @@
 #include "common.h"
 static ncnn::UnlockedPoolAllocator g_blob_pool_allocator;
 static ncnn::PoolAllocator g_workspace_pool_allocator;
-const int dstHeight = 32;
+const int dstHeight = 32;//when use PP-OCRv3 it should be 48
 ncnn::Net dbNet;
 ncnn::Net crnnNet;
 
@@ -178,12 +178,6 @@ TextLine scoreToTextLine(const std::vector<float>& outputData, int h, int w)
         maxIndex = 0;
         maxValue = -1000.f;
 
-        //std::vector<float> exps(w);
-        //for (int j = 0; j < w; j++)
-        //{
-        //    exps[j] = outputData[i * w + j];
-        //}
-        //float partition = accumulate(exps.begin(), exps.end(), 0.0);//row sum
         maxIndex = int(argmax(outputData.begin()+i*w, outputData.begin()+i*w+w));
         maxValue = float(*std::max_element(outputData.begin()+i*w, outputData.begin()+i*w+w));// / partition;
         if (maxIndex > 0 && maxIndex < keySize && (!(i > 0 && maxIndex == lastIndex))) {
@@ -197,7 +191,6 @@ TextLine scoreToTextLine(const std::vector<float>& outputData, int h, int w)
 
 TextLine getTextLine(const cv::Mat & src)
 {
-    int64 start = cv::getTickCount();
     float scale = (float)dstHeight / (float)src.rows;
     int dstWidth = int((float)src.cols * scale);
 
@@ -217,7 +210,7 @@ TextLine getTextLine(const cv::Mat & src)
     extractor.extract("out", out);
     float* floatArray = (float*)out.data;
     std::vector<float> outputData(floatArray, floatArray + out.h * out.w);
-    TextLine res= scoreToTextLine(outputData, out.h, out.w);
+    TextLine res = scoreToTextLine(outputData, out.h, out.w);
     return res;
 }
 

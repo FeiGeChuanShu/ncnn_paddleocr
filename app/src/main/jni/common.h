@@ -5,18 +5,18 @@
 #include "clipper.hpp"
 #include <jni.h>
 struct TextBox {
-	std::vector<cv::Point> boxPoint;
-	float score;
-	std::string text;
+    std::vector<cv::Point> boxPoint;
+    float score;
+    std::string text;
 };
 struct TextLine {
-	std::string text;
-	std::vector<float> charScores;
+    std::string text;
+    std::vector<float> charScores;
 };
 
 struct Angle {
-	int index;
-	float score;
+    int index;
+    float score;
 };
 std::vector<cv::Point> getMinBoxes(const std::vector<cv::Point>& inVec, float& minSideLen, float& allEdgeSize);
 float boxScoreFast(const cv::Mat& inMat, const std::vector<cv::Point>& inBox);
