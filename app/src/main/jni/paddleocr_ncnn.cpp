@@ -195,8 +195,8 @@ TextLine getTextLine(const cv::Mat & src)
     int dstWidth = int((float)src.cols * scale);
 
     cv::Mat srcResize;
-    resize(src, srcResize, cv::Size(dstWidth, dstHeight));
-
+    cv::resize(src, srcResize, cv::Size(dstWidth, dstHeight));
+    //if you use PP-OCRv3 you should change PIXEL_RGB to PIXEL_RGB2BGR
     ncnn::Mat input = ncnn::Mat::from_pixels(srcResize.data, ncnn::Mat::PIXEL_RGB,srcResize.cols, srcResize.rows);
     const float mean_vals[3] = { 127.5, 127.5, 127.5 };
     const float norm_vals[3] = { 1.0 / 127.5, 1.0 / 127.5, 1.0 / 127.5 };
