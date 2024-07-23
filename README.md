@@ -10,13 +10,15 @@ PS：if you use angle model plz change the input shape dstHeight from 32 to 48
 ## text detection  
 1.mv3dbnet-sim-op(paddleocr_mobile)  
 2.pdocrv2.0_det-op(PP-OCRv2)  
-3.ch_PP-OCRv3_det(PP-OCRv3)
+3.ch_PP-OCRv3_det(PP-OCRv3)  
+4.ch_PP-OCRv4_det(PP-OCRv4)  [model](https://github.com/FeiGeChuanShu/ncnn_ppstructure)  
 ## text angle cls  
 1.angle-sim-op  
 ## text recognition  
 1.mv3rec-sim-op(paddleocr_mobile)  
 2.pdocrv2.0_rec-op(PP-OCRv2)  
-3.ch_PP-OCRv3_rec(PP-OCRv3)
+3.ch_PP-OCRv3_rec(PP-OCRv3)  
+4.ch_PP-OCRv4_rec(PP-OCRv4)  [model](https://github.com/FeiGeChuanShu/ncnn_ppstructure)  
 ## how to build and run
 ### step1
 https://github.com/Tencent/ncnn/releases
